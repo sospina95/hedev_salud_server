@@ -1,6 +1,10 @@
-
 const express = require('express');
 const router = express.Router();
 const PatientCtrl =  require('../../controllers/patient/patient.controller');
-router.get('/',PatientCtrl.getPatient);
+router.post('/',PatientCtrl.actionIndex);
+router.post('/create',PatientCtrl.actionCreate);
+router.post('/edit',PatientCtrl.actionEdit);
+router.post('/delete',PatientCtrl.actionDelete);
+router.post('/search',PatientCtrl.actionSearch);
+router.post('/report',PatientCtrl.actionReport);
 module.exports = router;
