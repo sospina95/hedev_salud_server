@@ -34,9 +34,10 @@ Tools.findById = (Model,Id=0,res) => {
     }
 }
 Tools.createUpdate = (Model,params=[],res) =>{
-    var sql = `INSERT INTO ${Model.columnName()} `;
+    var sql = `INSERT INTO ${Model.tableName()} `;
     sql = sql + Tools.querySetInsert(params);
     sql = sql + Tools.querySetInsertValues(params);
+    sql = sql + ';'
     Tools.commandSqlCreateUpdate(sql,res);
 }
 Tools.commandSql = (sql,res) => {
@@ -82,7 +83,7 @@ Tools.commandSql = (sql,res) => {
         }
     });
 }
-Tools.commandSqlCreateUpdate = (sql,res) => {
+Tools.commandSqlCreateUpdate = (sql,res,Model) => {
     let con = config.config();
     con.connect(function(err) {
         const result = {data:[],message:{type:null,body:null},status:0};                    
@@ -91,16 +92,42 @@ Tools.commandSqlCreateUpdate = (sql,res) => {
                 con.query(sql, function (err, rs) {
                     try {
                         if (err==null) {
-                            result.status = 200;
-                            result.data = rs;
-                            if (result.data.length!=0){
-                                result.message.type = 'successfull';
-                                result.message.body = 'Ok, ejecución exitosa';
-                            }else{
-                                result.message.type = 'Warning';
-                                result.message.body = 'No se encontró ningun registro.';
-                            }
-
+                            var sqlNexValue = `
+                                SELECT
+                                MAX(${Model.definePk()}) AS ${Model.definePk()}
+                                FROM
+                                ${Model.tableName()}
+                            `;
+                            con.query(sqlNexValue, function (err, rs) {
+                                if (err==null) {
+                                    var sqlReturn = `
+                                    SELECT
+                                    ${Model.columnName()}
+                                    FROM 
+                                    ${Model.tableName()}
+                                    WHERE
+                                    1=1
+                                    `;
+                                    sql+= `AND ${Model.definePk()} = '${Id}' `;
+                                    con.query(sqlReturn, function (err, rs) {
+                                        if (err==null) {
+                                            result.status = 200;
+                                            result.data = rs;
+                                            if (result.data.length!=0){
+                                                result.message.type = 'successfull';
+                                                result.message.body = 'Ok, ejecución exitosa';
+                                            }else{
+                                                result.message.type = 'Warning';
+                                                result.message.body = 'No se encontró ningun registro.';
+                                            }
+                                        } else {
+                                            throw err;
+                                        }
+                                    });
+                                }else {
+                                    throw err;
+                                }
+                            });
                         } else {
                             throw err;
                         }
@@ -154,6 +181,30 @@ Tools.querySetOrderBy = (orderBy) => {
             sql+=` ${element.campos.join(',')} ${element.orderBy} `;
         });
     }
+    return sql;
+}
+Tools.querySetInsert = (params) => {
+    var sql = '(';
+    if (params.length!=0){
+        var campos = [];
+        for(var key in params[0]){
+            campos.push(key);
+        }
+        sql+=`${campos.join(',')}`;
+    }
+    sql += ')';
+    return sql;
+}
+Tools.querySetInsertValues = (params) => {
+    var sql = `('`;
+    if (params.length!=0){
+        var values = [];
+        for(var key in params[0]){
+            values.push(params[0][key]);
+        }
+        sql+=`${values.join("','")}`;
+    }
+    sql += `')`;
     return sql;
 }
 
