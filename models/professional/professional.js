@@ -1,33 +1,23 @@
 
-var Patient = class Patient {
-    constructor(IdPacientes = '',
+var Professional = class Professional {
+    constructor(IdProfesionales = '',
         IdTipoDocumento= '',
         NumeroDocumento= '',
         NombreCompleto= '',
         Apellidos= '',
         Nombres= '',
-        FechaNacimiento= '',
-        Direccion= '',
-        Telefono= '',
-        Celular= '',
-        Genero= '',
-        Email= '',
+        Email='',
         IdCreadoPor= '',
         IdModificadoPor= '',
         FechaCreacion= '',
         FechaModificacion= '',
         IdEstado='') {
-        this.IdPacientes = IdPacientes; 
+        this.IdProfesionales = IdProfesionales; 
         this.IdTipoDocumento = IdTipoDocumento;
         this.NumeroDocumento = NumeroDocumento;
         this.NombreCompleto = NombreCompleto;
         this.Apellidos = Apellidos;
         this.Nombres = Nombres;
-        this.FechaNacimiento = FechaNacimiento; 
-        this.Direccion = Direccion;
-        this.Telefono = Telefono;
-        this.Celular = Celular;
-        this.Genero = Genero;
         this.Email = Email;
         this.IdCreadoPor = IdCreadoPor;
         this.IdModificadoPor = IdModificadoPor;
@@ -36,24 +26,19 @@ var Patient = class Patient {
         this.IdEstado = IdEstado;
     }
     tableName() {
-        return 'm_Pacientes';
+        return 'm_Profesionales';
     }
     definePk(){
-        return 'IdPacientes';
+        return 'IdProfesionales';
     }
     defineColumnArray(){
         var columnArray = [
-            'IdPacientes',
+            'IdProfesionales',
             'IdTipoDocumento',
             'NumeroDocumento',
             'NombreCompleto',
             'Apellidos',
             'Nombres',
-            'FechaNacimiento',
-            'Direccion',
-            'Telefono',
-            'Celular',
-            'Genero',
             'Email',
             'IdCreadoPor',
             'IdModificadoPor',
@@ -67,4 +52,4 @@ var Patient = class Patient {
         return columnArray.join(',');
     }
 };
-module.exports = Patient;
+module.exports = Professional;

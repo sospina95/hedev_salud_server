@@ -13,6 +13,7 @@ app.use(cors('*'));
 
 // Routes
 app.use('/api/patient',require("./routes/patient/patient.routes"));
+app.use('/api/professional',require("./routes/professional/professional.routes"));
 
 // port
 app.listen(app.get('port'), ()=> {

@@ -38,7 +38,7 @@ Tools.createUpdate = (Model,params=[],res) =>{
     sql = sql + Tools.querySetInsert(params);
     sql = sql + Tools.querySetInsertValues(params);
     sql = sql + ';'
-    Tools.commandSqlCreateUpdate(sql,res);
+    Tools.commandSqlCreateUpdate(sql,res,Model);
 }
 Tools.commandSql = (sql,res) => {
     let con = config.config();
@@ -108,18 +108,20 @@ Tools.commandSqlCreateUpdate = (sql,res,Model) => {
                                     WHERE
                                     1=1
                                     `;
-                                    sql+= `AND ${Model.definePk()} = '${Id}' `;
+                                    sqlReturn += `AND ${Model.definePk()} = '${rs[0][Model.definePk()]}';`;
                                     con.query(sqlReturn, function (err, rs) {
                                         if (err==null) {
-                                            result.status = 200;
-                                            result.data = rs;
-                                            if (result.data.length!=0){
-                                                result.message.type = 'successfull';
-                                                result.message.body = 'Ok, ejecución exitosa';
-                                            }else{
-                                                result.message.type = 'Warning';
-                                                result.message.body = 'No se encontró ningun registro.';
-                                            }
+                                                result.status = 200;
+                                                result.data = rs;
+                                                if (result.data.length!=0){
+                                                    result.message.type = 'successfull';
+                                                    result.message.body = 'Ok, ejecución exitosa';
+                                                }else{
+                                                    result.message.type = 'Warning';
+                                                    result.message.body = 'No se encontró ningun registro.';
+                                                }
+                                                res.send(result);
+                                                res.status(result.status).end(); 
                                         } else {
                                             throw err;
                                         }
@@ -135,10 +137,9 @@ Tools.commandSqlCreateUpdate = (sql,res,Model) => {
                         result.message.type = 'Error';
                         result.message.body = "Error-commandSql: "+error;
                         result.status = 500;
+                        res.send(result);
+                        res.status(result.status).end(); 
                     }
-                    console.log("resultA",result);
-                    res.send(result);
-                    res.status(result.status).end(); 
                 });
             }else{
                 throw err;
@@ -175,8 +176,9 @@ Tools.querySetWhere = (params) => {
     return sql;
 }
 Tools.querySetOrderBy = (orderBy) => {
-    var sql = ` ORDER BY `;
+    var sql = ` `;
     if (orderBy.length!=0){
+        sql+=` ORDER BY `;
         orderBy.forEach(element => {
             sql+=` ${element.campos.join(',')} ${element.orderBy} `;
         });
@@ -196,7 +198,7 @@ Tools.querySetInsert = (params) => {
     return sql;
 }
 Tools.querySetInsertValues = (params) => {
-    var sql = `('`;
+    var sql = `values('`;
     if (params.length!=0){
         var values = [];
         for(var key in params[0]){

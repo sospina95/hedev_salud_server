@@ -1,16 +1,16 @@
 
 
-const PatientCtrl = {};
-const Patient = require('../../models/patient/patient');
+const ProfessionalCtrl = {};
+const Professional = require('../../models/professional/professional');
 const tools =  require('../../utils/tools');
 const config = require('../../database/config');
 
-PatientCtrl.actionIndex = async (req, res) => {
-    let patient = new Patient();
-    tools.findByAll(patient,params=req['body']['params'],limit=req['body']['limit'],orderBy=req['body']['orderBy'],res);
+ProfessionalCtrl.actionIndex = async (req, res) => {
+    let professional = new Professional();
+    tools.findByAll(professional,params=req['body']['params'],limit=req['body']['limit'],orderBy=req['body']['orderBy'],res);
 }
-PatientCtrl.actionCreate = async (req, res) => {
-    let patient = new Patient();
+ProfessionalCtrl.actionCreate = async (req, res) => {
+    let professional = new Professional();
     let con = config.config();
     con.connect(function(err) {
         const result = {data:[],message:{type:null,body:null},status:0};                    
@@ -21,7 +21,7 @@ PatientCtrl.actionCreate = async (req, res) => {
                 con.query(sql, function (err, rs) {
                     try {
                         if (err==null) {
-                            tools.createUpdate(patient,params=req['body']['params'],res);
+                            tools.createUpdate(professional,params=req['body']['params'],res);
                         } else {
                             throw err;
                         }
@@ -45,16 +45,16 @@ PatientCtrl.actionCreate = async (req, res) => {
         }
     });
 }
-PatientCtrl.actionEdit = async (req, res) => {
-    console.log("Controller patient edit");
+ProfessionalCtrl.actionEdit = async (req, res) => {
+    console.log("Controller professional edit");
 }
-PatientCtrl.actionDelete = async (req, res) => {
-    console.log("Controller patient Delete");
+ProfessionalCtrl.actionDelete = async (req, res) => {
+    console.log("Controller professional Delete");
 }
-PatientCtrl.actionSearch = async (req, res) => {
-    console.log("Controller patient search");
+ProfessionalCtrl.actionSearch = async (req, res) => {
+    console.log("Controller professional search");
 }
-PatientCtrl.actionReport = async (req, res) => {
-    console.log("Controller patient Report");
+ProfessionalCtrl.actionReport = async (req, res) => {
+    console.log("Controller professional Report");
 }
-module.exports = PatientCtrl;
+module.exports = ProfessionalCtrl;
