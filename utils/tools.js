@@ -3,17 +3,20 @@ const config = require('../database/config');
 Tools.findByAll = (Model,params=[],limit=0,orderBy=[],res) => {
     var sql = `
     SELECT
-    ${Model.columnName()}
+    ${Model.columnName()},
+    ${Tools.querySetRelation(Model.relationTo(),Model)['Columna']}
     FROM 
-    ${Model.tableName()}
+    ${Model.tableName()} ${Tools.querySetRelation(Model.relationTo(),Model)['sql']} 
     WHERE
     1=1
     `;
-    sql = sql + Tools.querySetWhere(params);
-    sql = sql + Tools.querySetOrderBy(orderBy);
+    sql = sql + Tools.querySetWhere(params, Model);
+    sql = sql + Tools.querySetOrderBy(orderBy, Model);
     if (limit!=0){
         sql+= ` LIMIT ${limit} `;
     }
+    console.log("sql",sql);
+    
     Tools.commandSql(sql,res);
 }
 Tools.findById = (Model,Id=0,res) => {
@@ -34,11 +37,36 @@ Tools.findById = (Model,Id=0,res) => {
     }
 }
 Tools.createUpdate = (Model,params=[],res) =>{
-    var sql = `INSERT INTO ${Model.tableName()} `;
-    sql = sql + Tools.querySetInsert(params);
-    sql = sql + Tools.querySetInsertValues(params);
-    sql = sql + ';'
+    var sql;
+    if (params[0][Model.definePk()]!=undefined){
+        sql = `UPDATE ${Model.tableName()} SET `;
+        sql = sql + Tools.querySetCamposEdit(Model,params);
+        sql = sql + `WHERE ${Model.definePk()} = '${params[0][Model.definePk()]}';`;
+    }else{
+        sql = `INSERT INTO ${Model.tableName()} `;
+        sql = sql + Tools.querySetInsert(params);
+        sql = sql + Tools.querySetInsertValues(params);
+        sql = sql + ';'
+    }
     Tools.commandSqlCreateUpdate(sql,res,Model);
+}
+Tools.querySetCamposEdit = (Model,params) => {
+    var sql;
+    if (params.length!=0){
+        var cadena = [];
+        for(var key in params[0]){
+            if (key != Model.definePk()){
+                if (key == 'FechaModificacion'){
+                    sql =` ${key} = '${Tools.fechaActual()}' `;
+                }else{
+                    sql =` ${key} = '${params[0][key]}' `;
+                }
+                cadena.push(sql);
+            }
+        }
+        sql = cadena.join(",");
+    }
+    return sql;
 }
 Tools.commandSql = (sql,res) => {
     let con = config.config();
@@ -153,11 +181,11 @@ Tools.commandSqlCreateUpdate = (sql,res,Model) => {
         }
     });
 }
-Tools.querySetWhere = (params) => {
+Tools.querySetWhere = (params, Model) => {
     var sql = '';
     if (params.length!=0){
         for(var key in params[0]){
-            sql+=` ${params[0][key].condition} ${key} `;
+            sql+=` ${params[0][key].condition} ${Model.tableName()}.${key} `;
             if (params[0][key].clausula=='in') {
                 sql+= ` IN ('${params[0][key].value.join("','")}')`;
             } else if (params[0][key].clausula=='nin'){
@@ -175,12 +203,12 @@ Tools.querySetWhere = (params) => {
     }
     return sql;
 }
-Tools.querySetOrderBy = (orderBy) => {
+Tools.querySetOrderBy = (orderBy, Model) => {
     var sql = ` `;
     if (orderBy.length!=0){
         sql+=` ORDER BY `;
         orderBy.forEach(element => {
-            sql+=` ${element.campos.join(',')} ${element.orderBy} `;
+            sql+=` ${Model.tableName()}.${element.campos.join(`,${Model.tableName()}.`)} ${element.orderBy} `;
         });
     }
     return sql;
@@ -202,12 +230,44 @@ Tools.querySetInsertValues = (params) => {
     if (params.length!=0){
         var values = [];
         for(var key in params[0]){
-            values.push(params[0][key]);
+            if (key == 'FechaCreacion'){
+                values.push(Tools.fechaActual());
+            }else{
+                values.push(params[0][key]);
+            }
         }
         sql+=`${values.join("','")}`;
     }
     sql += `')`;
     return sql;
 }
-
+Tools.fechaActual = () => {
+    var date = new Date();
+    var dd = (date.getDate() < 10 ? '0' : '') + date.getDate();
+    var MM = ((date.getMonth() + 1) < 10 ? '0' : '') + (date.getMonth() + 1);
+    var yyyy = date.getFullYear();
+    var hour = date.getHours();
+    hour = ("0" + hour).slice(-2);
+    var minute = date.getMinutes();
+    minute = ("0" + minute).slice(-2);
+    var second = date.getSeconds();
+    second = ("0" + second).slice(-2);
+    return ( yyyy + "-" + MM + "-" + dd +" "+hour+":"+minute+":"+second);
+}
+Tools.querySetRelation = (RelationsArray, Model) =>{
+    var sqlReturn = [];
+    var sql;
+    var arraSql = [];
+    var arraSqlColum = [];
+    if (RelationsArray.length!=0){
+        var sql='';
+        RelationsArray.forEach(element => {
+            arraSqlColum.push(element.columnName());
+            arraSql.push(` inner join ${element.tableName()} on (${element.tableName()}.${element.definePk()}=${Model.tableName()}.${element.definePk()}) `);        
+        });
+        sqlReturn['Columna']= arraSqlColum.join(',');
+        sqlReturn['sql']=sql + arraSql.join(' ');
+    }
+    return sqlReturn;
+}
 module.exports = Tools;

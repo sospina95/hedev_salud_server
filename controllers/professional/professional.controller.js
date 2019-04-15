@@ -47,6 +47,8 @@ ProfessionalCtrl.actionCreate = async (req, res) => {
 }
 ProfessionalCtrl.actionEdit = async (req, res) => {
     console.log("Controller professional edit");
+    let professional = new Professional();
+    tools.createUpdate(professional,params=req['body']['params'],res);
 }
 ProfessionalCtrl.actionDelete = async (req, res) => {
     console.log("Controller professional Delete");

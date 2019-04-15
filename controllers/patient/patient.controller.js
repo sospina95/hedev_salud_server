@@ -46,7 +46,8 @@ PatientCtrl.actionCreate = async (req, res) => {
     });
 }
 PatientCtrl.actionEdit = async (req, res) => {
-    console.log("Controller patient edit");
+    let patient = new Patient();
+    tools.createUpdate(patient,params=req['body']['params'],res);
 }
 PatientCtrl.actionDelete = async (req, res) => {
     console.log("Controller patient Delete");
