@@ -4,6 +4,8 @@ const PatientCtrl = {};
 const Patient = require('../../models/patient/patient');
 const tools =  require('../../utils/tools');
 const config = require('../../database/config');
+const io = require('socket.io-client');
+var socket = io ('http://localhost:3000');
 
 PatientCtrl.actionIndex = async (req, res) => {
     let patient = new Patient();
@@ -22,6 +24,8 @@ PatientCtrl.actionCreate = async (req, res) => {
                     try {
                         if (err==null) {
                             tools.createUpdate(patient,params=req['body']['params'],res);
+                            socket.emit('createdNotification',{ msm: "El paciente "+req['body']['params'][0].NumeroDocumento+"-"+req['body']['params'][0].NombreCompleto+"Se acaba de registrar con satisfacción"});
+
                         } else {
                             throw err;
                         }
