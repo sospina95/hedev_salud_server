@@ -2,7 +2,7 @@ var mysql = require('mysql2');
 const bdConfig = {};
 bdConfig.config = () =>{
     const con = mysql.createConnection({
-        host: "192.168.40.135",
+        host: "192.168.50.21",
         user: "root",
         password: "123456",
         database: "hedev_salud"
